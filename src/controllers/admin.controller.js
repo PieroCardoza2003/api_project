@@ -1,5 +1,22 @@
 import { pool } from '../db.js'
 
+export const autenticarAdmin = async(req, res) => {
+    try{
+        const {usuario, passwrd} = req.body
+        const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE usuario = ? AND passwrd = ? AND estado = ?', [usuario, passwrd, 'A'])
+        
+        if(rows.length <= 0) return res.status(404).json({
+            message: 'Admin not fount'
+        })
+
+        res.json(rows[0])
+    }catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
+
 export const getAdmin = async(req, res) => {
     try{
         const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE estado = ?', 'A')
