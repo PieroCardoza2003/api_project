@@ -23,7 +23,7 @@ export const getAdmin = async(req, res) => {
         res.json(rows)
     }catch(error){
         return res.status(500).json({
-            message: 'Ocurrio algun error'
+            message: 'Ocurrio algun error' 
         })
     }
 }
