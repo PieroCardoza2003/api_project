@@ -37,6 +37,7 @@ export const getRunnerId = async(req, res) => {
         })
     
         res.json(rows[0])
+        console.log(rows[0])
     }
     catch(error){
         return res.status(500).json({

@@ -5,6 +5,7 @@ import runnerRoutes from './routes/runner.routes.js'
 import digitadorRoutes from './routes/digitador.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import indexRoutes from './routes/index.routes.js'
+import mensajeValidador from './routes/services.routes.js'
 
 const app = express()
 
@@ -16,6 +17,8 @@ app.use('/api', sucursalRoutes)
 app.use('/api', runnerRoutes)
 app.use('/api', digitadorRoutes)
 app.use('/api', adminRoutes)
+
+app.use('/api', mensajeValidador)
 
 app.use('/api' , employeesRoutes)
 
