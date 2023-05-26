@@ -4,17 +4,19 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE PROCEDURE sp_lista_sucursal(
-	IN estado char(1)
-)
+        const consulta3 = `CREATE FUNCTION fn_generar_codigo() RETURNS varchar(7)
+    READS SQL DATA
+    DETERMINISTIC
 BEGIN
-	IF estado = 'A' THEN
-		SELECT * FROM SUCURSAL WHERE estado = 'A';
-	ELSEIF estado = 'I' THEN
-		SELECT * FROM SUCURSAL WHERE estado = 'I';
-	ELSE 
-		SELECT '1' fallo;
-	END IF;
+    DECLARE codigo VARCHAR(7);
+    DECLARE codigo_existe INT;
+
+    REPEAT
+        SET codigo = LPAD(FLOOR(RAND() * 10000000), 7, '0');
+        SELECT COUNT(*) INTO codigo_existe FROM DATOS WHERE id_user = codigo;
+    UNTIL codigo_existe = 0 END REPEAT;
+
+	RETURN codigo;
 END`; 
         
     
