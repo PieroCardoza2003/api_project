@@ -4,43 +4,34 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE PROCEDURE sp_iniciar_sesion(
-	IN _usuario varchar(80),
-    IN _passwrd varchar(80)
+        const consulta3 = `CREATE PROCEDURE sp_cambiar_estado(
+	IN _codigo varchar(7),
+    IN _estado varchar(1),
+    IN _nivel int
 )
 BEGIN
-	DECLARE nivel varchar(1);
-    DECLARE fallo varchar(7) DEFAULT 'x';
+	DECLARE existe int default 0;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         SELECT '1' as fallo;
     END;
-    
+
     START TRANSACTION;
-
-    SELECT COALESCE(RIGHT(_usuario, 1), '6') INTO nivel;
-
-		IF nivel = '0' THEN
-			SELECT d.id_user INTO fallo FROM DATOS d 
-				INNER JOIN ADMINISTRADOR a ON d.id_user = a.id_admin 
-			WHERE d.usuario = _usuario AND d.passwrd = _passwrd AND a.estado = 'A';
-		ELSEIF nivel = '1' THEN
-			SELECT d.id_user INTO fallo FROM DATOS d 
-				INNER JOIN DIGITADOR di ON d.id_user = di.id_digitador 
-			WHERE d.usuario = _usuario AND d.passwrd = _passwrd AND di.estado = 'A';
-        ELSEIF nivel = '2' THEN
-			SELECT d.id_user INTO fallo FROM DATOS d 
-				INNER JOIN RUNNER r ON d.id_user = r.id_runner 
-			WHERE d.usuario = _usuario AND d.passwrd = _passwrd AND r.estado = 'A';
+    Select count(*) into existe from DATOS WHERE id_user = _codigo; 
+    
+		IF _nivel = 0 AND existe = 1 THEN
+			UPDATE ADMINISTRADOR SET estado = _estado  WHERE id_admin = _codigo;
+            SELECT '0' as fallo;
+		ELSEIF _nivel = 1 AND existe = 1 THEN
+			UPDATE DIGITADOR SET estado = _estado WHERE id_digitador = _codigo;
+            SELECT '0' as fallo;
+		ELSEIF _nivel = 2 AND existe = 1 THEN
+			UPDATE RUNNER SET estado = _estado WHERE id_runner = _codigo;
+            SELECT '0' as fallo;
 		ELSE
-			SELECT '1' as fallo;
-        END IF;
-
-        IF LENGTH(fallo) = 7 THEN
-			SELECT fallo;
-		ELSE
-			SELECT '1' fallo;
+			ROLLBACK;
+            SELECT '1' as fallo;
 		END IF;
     COMMIT;
 END`; 
