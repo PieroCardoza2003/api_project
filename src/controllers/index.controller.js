@@ -5,7 +5,7 @@ export const ping = async (req, res) => {
 
     const er = '';
     try{
-        const consulta = `show tables;`; 
+        const consulta = `show tables`; 
     
      
         const [result] = await pool.query(consulta);
