@@ -16,7 +16,7 @@ export const ping = async (req, res) => {
         CONSTRAINT ck_dni CHECK (dni REGEXP '^[0-9]{8}$'),
         CONSTRAINT ck_telefono CHECK (telefono REGEXP '^[0-9]{9}$'),
         CONSTRAINT ck_email CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
-    )`;
+    )`; 
 
     const [result] = await pool.query(consulta);
 
