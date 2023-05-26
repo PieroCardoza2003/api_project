@@ -4,15 +4,18 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE TABLE SUCURSAL(
-	id_sucursal int auto_increment primary key,
-	razonSocial varchar(128) not null,
-	email varchar(128) null,
-    estado char(1),
-    CONSTRAINT uq_razonSocial UNIQUE (razonSocial),
-    CONSTRAINT ck_estado_sucursal CHECK (estado IN ('A', 'I')),
-    CONSTRAINT ck_email_sucursal CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
-)`; 
+        const consulta3 = `CREATE PROCEDURE sp_lista_sucursal(
+	IN estado char(1)
+)
+BEGIN
+	IF estado = 'A' THEN
+		SELECT * FROM SUCURSAL WHERE estado = 'A';
+	ELSEIF estado = 'I' THEN
+		SELECT * FROM SUCURSAL WHERE estado = 'I';
+	ELSE 
+		SELECT '1' fallo;
+	END IF;
+END`; 
         
     
         const [res3] = await pool.query(consulta3);
