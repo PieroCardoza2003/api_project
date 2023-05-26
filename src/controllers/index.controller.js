@@ -4,16 +4,16 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE PROCEDURE sp_lista_digitador(
+        const consulta3 = `CREATE PROCEDURE sp_lista_administrador(
 	IN codigo varchar(7)
 )
 BEGIN
 	IF LENGTH(codigo) = 7 THEN
-		SELECT * FROM DIGITADOR di inner join DATOS d ON di.id_digitador = d.id_user where di.id_digitador = codigo;
+		SELECT * FROM ADMINISTRADOR a INNER JOIN DATOS d ON a.id_admin = d.id_user where a.id_admin = codigo;
 	ELSEIF codigo = 'I' THEN
-		SELECT * FROM DIGITADOR di inner join DATOS d ON di.id_digitador = d.id_user where di.estado = 'I';
+		SELECT * FROM ADMINISTRADOR a INNER JOIN DATOS d ON a.id_admin = d.id_user WHERE a.estado = 'I';
     ELSEIF codigo = 'A' THEN
-		SELECT * FROM DIGITADOR di inner join DATOS d ON di.id_digitador = d.id_user where di.estado = 'A';
+        SELECT * FROM ADMINISTRADOR a INNER JOIN DATOS d ON a.id_admin = d.id_user WHERE a.estado = 'A';
 	ELSE 
 		SELECT '1' fallo;
     END IF;
