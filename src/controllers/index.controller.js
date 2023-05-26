@@ -4,13 +4,14 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE TABLE ADMINISTRADOR(
-	id_admin varchar(7) primary key,
-	nombre varchar(80) not null,
-	apellidos varchar(80) not null,
-	estado char(1) not null,
-    CONSTRAINT ck_estado_admin CHECK (estado IN ('A', 'I')),
-    CONSTRAINT fk_datos_admin FOREIGN KEY (id_admin) REFERENCES DATOS(id_user) ON DELETE CASCADE
+        const consulta3 = `CREATE TABLE SUCURSAL(
+	id_sucursal int auto_increment primary key,
+	razonSocial varchar(128) not null,
+	email varchar(128) null,
+    estado char(1),
+    CONSTRAINT uq_razonSocial UNIQUE (razonSocial),
+    CONSTRAINT ck_estado_sucursal CHECK (estado IN ('A', 'I')),
+    CONSTRAINT ck_email_sucursal CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
 )`; 
         
     
