@@ -1,6 +1,6 @@
 import { pool } from '../db.js'
 
-const nivel = 0;
+const nivel = 1;
 
 export const autenticarDigitador = async(req, res) => {
     try{
