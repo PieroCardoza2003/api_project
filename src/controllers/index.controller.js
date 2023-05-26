@@ -3,6 +3,7 @@ import {pool} from '../db.js'
 export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
+    const er = '';
     try{
         const consulta = `CREATE TABLE DATOS(
             id_user varchar(7) primary key,
@@ -16,16 +17,17 @@ export const ping = async (req, res) => {
             CONSTRAINT ck_dni CHECK (dni REGEXP '^[0-9]{8}$'),
             CONSTRAINT ck_telefono CHECK (telefono REGEXP '^[0-9]{9}$'),
             CONSTRAINT ck_email CHECK (email REGEXP '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
-        )`; 
+        );`; 
     
      
         const [result] = await pool.query(consulta);
     
-    
+        er = result;
+
         res.json(result);
 
         }
         catch(error){
-            res.json('ocurrio un error');
+            res.json(error);
         }
     }
