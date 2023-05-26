@@ -4,19 +4,42 @@ export const ping = async (req, res) => {
     //const [result] = await pool.query('SELECT "SI HAY CONEXION CON LA BD" AS result')
 
     try{
-        const consulta3 = `CREATE FUNCTION fn_generar_usuario(nombre varchar(80), apellido varchar(80), nivel int) RETURNS varchar(80)
-    READS SQL DATA
-    DETERMINISTIC
+        const consulta3 = `CREATE PROCEDURE sp_insertar(
+	IN _nombre varchar(80),
+	IN _apellidos varchar(80),
+	IN _dni char(8),
+	IN _telefono char(9),
+	IN _email varchar(128),
+	IN _nivel int
+)
 BEGIN
+    DECLARE codigo VARCHAR(7);
     DECLARE _usuario VARCHAR(80);
-    DECLARE existe INT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT '1' as fallo;
+    END;
 
-    REPEAT
-        SET _usuario = LOWER(CONCAT(TRIM(SUBSTRING_INDEX(nombre, ' ', 1)) ,'.', TRIM(SUBSTRING_INDEX(apellido, ' ', 1)) , LPAD(FLOOR(RAND() * 100), 2, '0') , nivel));
-        SELECT COUNT(*) INTO existe FROM DATOS WHERE usuario = _usuario;
-    UNTIL existe = 0 END REPEAT;
-
-	RETURN _usuario;
+    START TRANSACTION;
+    
+    SET codigo = fn_generar_codigo();
+    SET _usuario = fn_generar_usuario(_nombre, _apellidos, _nivel);
+    
+    INSERT INTO DATOS VALUES(codigo , _dni , _telefono, LOWER(_email), _usuario, _dni);
+    
+		CASE _nivel -- | 0: admin | 1: digitador | 2: runner |
+			WHEN 0 THEN
+				INSERT INTO ADMINISTRADOR VALUES(codigo , UPPER(_nombre) , UPPER(_apellidos) , 'A');
+			WHEN 1 THEN
+				INSERT INTO DIGITADOR VALUES(codigo , UPPER(_nombre) , UPPER(_apellidos) , 'A');
+			WHEN 2 THEN
+				INSERT INTO RUNNER VALUES(codigo , UPPER(_nombre) , UPPER(_apellidos) , 'A');
+			ELSE
+				ROLLBACK;
+		END CASE;
+    COMMIT;
+    SELECT '0' as fallo;
 END`; 
         
     
