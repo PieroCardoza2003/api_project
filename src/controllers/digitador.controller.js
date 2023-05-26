@@ -1,16 +1,18 @@
 import { pool } from '../db.js'
 
+const nivel = 0;
 
 export const autenticarDigitador = async(req, res) => {
     try{
         const {usuario, passwrd} = req.body
-        const [rows] = await pool.query('SELECT * FROM DIGITADOR WHERE usuario = ? AND passwrd = ? AND estado = ?', [usuario, passwrd, 'A'])
-        
-        if(rows.length <= 0) return res.status(404).json({
-            message: 'Digitador not fount'
-        })
+        const [rows] = await pool.query('CALL sp_iniciar_sesion(?,?)', [usuario, passwrd])
 
-        res.json(rows[0])
+        if(rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
+
     }catch(error){
         return res.status(500).json({
             message: 'Ocurrio algun error'
@@ -20,8 +22,8 @@ export const autenticarDigitador = async(req, res) => {
 
 export const getDigitador = async(req, res) => {
     try{
-        const [rows] = await pool.query('SELECT * FROM DIGITADOR WHERE estado = ?', 'A')
-        res.json(rows)
+        const [rows] = await pool.query('CALL sp_lista_digitador(?)', 'A')
+        res.json(rows[0])
     }catch(error){
         return res.status(500).json({
             message: 'Ocurrio algun error'
@@ -31,13 +33,13 @@ export const getDigitador = async(req, res) => {
 
 export const getDigitadorId = async(req, res) => {
     try{
-        const [rows] = await pool.query('SELECT * FROM DIGITADOR WHERE id_digitador = ?', [req.params.id])
+        const [rows] = await pool.query('CALL sp_lista_digitador(?)', [req.params.id])
     
-        if(rows.length <= 0) return res.status(404).json({
-            message: 'Digitador not fount'
-        })
-    
-        res.json(rows[0])
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({
@@ -48,20 +50,16 @@ export const getDigitadorId = async(req, res) => {
 
 export const createDigitador = async (req, res) => {
     try{
-        const {nombre, apellidos, dni, telefono, email, usuario, passwrd, estado} = req.body
-        const [rows] = await pool.query('INSERT INTO DIGITADOR (nombre, apellidos, dni, telefono, email, usuario, passwrd, estado) VALUES (?,?,?,?,?,?,?,?)', [nombre, apellidos, dni, telefono, email, usuario, passwrd, estado])
+        const {nombre, apellidos, dni, telefono, email} = req.body
 
-        res.send({
-            id: rows.insertId,
-            nombre,
-            apellidos,
-            dni,
-            telefono,
-            email,
-            usuario,
-            passwrd,
-            estado
-        })
+        const [rows] = await pool.query('CALL sp_insertar(?,?,?,?,?,?)', [nombre, apellidos, dni, telefono, email, nivel])
+
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
+        
     }
     catch(error){
         return res.status(500).json({
@@ -74,17 +72,15 @@ export const updateDigitador = async(req, res) => {
 
     try{
         const {id} = req.params
-        const {nombre, apellidos, dni, telefono, email, usuario, passwrd, estado} = req.body
+        const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
         
-        const [result] = await pool.query('UPDATE DIGITADOR SET nombre = IFNULL(?, nombre), apellidos = IFNULL(?, apellidos), dni = IFNULL(?, dni), telefono = IFNULL(?, telefono), email = IFNULL(?, email), usuario = IFNULL(?, usuario), passwrd = IFNULL(?, passwrd), estado = IFNULL(?,estado) WHERE id_digitador = ?',[nombre, apellidos, dni, telefono, email, usuario, passwrd, estado, id])
-    
-        if(result.affectedRows == 0) return res.status(404).json({
-            message: 'Digitador not fount'
-        })
-    
-        const [rows] = await pool.query('SELECT * FROM DIGITADOR WHERE id_digitador = ?', [id])
-    
-        res.json(rows[0])
+        const [result] = await pool.query('CALL sp_actualizar( ?,?,?,?,?,?,?,?,? )',[id, nombre, apellidos, dni, telefono, email, usuario, passwrd, nivel])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({
@@ -96,13 +92,55 @@ export const updateDigitador = async(req, res) => {
 export const deleteDigitador = async(req, res) => {
 
     try{
-        const [result] = await pool.query('DELETE FROM DIGITADOR WHERE id_digitador = ?', [req.params.id])
-    
-        if(result.affectedRows <= 0 ) return res.status(404).json({
-            message: 'Digitador not fount'
+        const [result] = await pool.query('CALL sp_eliminar(?)', [req.params.id])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
         })
-    
-        res.sendStatus(204)
+    }
+}
+
+export const estadoDigitador = async(req, res) => {
+
+    try{
+        const {id} = req.params
+        const {estado} = req.body
+        
+        const [result] = await pool.query('CALL sp_cambiar_estado( ?,?,? )',[id, estado, nivel])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
+
+export const cambiarPassDigitador = async(req, res) => {
+
+    try{
+        const {id} = req.params
+        const {oldpasswrd , newpasswrd} = req.body
+
+        const [result] = await pool.query('CALL sp_cambiar_pass( ?,?,? )',[id, oldpasswrd, newpasswrd])
+        
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({

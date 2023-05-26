@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import { sendMenssaje } from '../controllers/service.controller'
+import { recuperarContrasena } from '../controllers/service.controller.js'
 
 const router = Router()
 
-router.post('/msj', sendMenssaje)
+router.post('/msj', recuperarContrasena)
 
 export default router

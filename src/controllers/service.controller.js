@@ -1,42 +1,26 @@
 import { pool } from '../db.js'
-require('dotenv').config();
+import {USER_EMAIL,EMAIL_PASS} from '../config.js'
+import nodemailer from 'nodemailer'
 
-const nodemailer = require('nodemailer');
-
-export const sendMenssaje = async (req, res) => {
-    try{
-        const {email, codigo} = req.body
-
-        
-        const [rows] = await pool.query('INSERT INTO employee (name, salary) VALUES (?,?)', [name, salary])
-        res.send({
-            id: rows.insertId,
-            name,
-            salary
-        })
-    }
-    catch(error){
-        return res.status(500).json({
-            message: 'Ocurrio algun error'
-        })
-    }
-}
-
-export const recuperarContraseña = async(req, res) => {
+export const recuperarContrasena = async(req, res) => {
     try{
         const {usuario, codigo} = req.body
         
         //Validar que el usuario este en nuestra base de datos
-        const [rows] = await pool.query('SELECT id_user,email FROM DATOS WHERE usuario = ?', [usuario])
+        const [rows] = await pool.query('SELECT email FROM DATOS WHERE usuario = ?', [usuario])
         
         if(rows.length <= 0) return res.status(404).json({
-            message: 'E-mail not fount'
+            message: 'User not fount'
         })
 
         //Extraer el E-mail asociado al usuario
-        const email =  res.json(rows[0].email)
+        const email =  rows[0].email
 
+        //enviar el mensaje con el codigo de recuperacion
+        enviarMail(email, codigo);
 
+        //se muesta el correo asociado
+        res.json(rows[0])
 
     }catch(error){
         return res.status(500).json({
@@ -45,31 +29,26 @@ export const recuperarContraseña = async(req, res) => {
     }
 }
 
-enviarMail = async (email, mnsj) => {
+export const enviarMail = async (email, mnsj) => {
 
     const config = {
         service: 'Gmail',
         auth : {
-            user : process.env.USER_EMAIL,
-            pass : process.env.EMAIL_PASS
+            user : USER_EMAIL,
+            pass : EMAIL_PASS
         },
         secure: true, // Utiliza el protocolo SMTP con TLS
     }
 
     const mensaje = {
-        from : process.env.USER_EMAIL,
+        from : USER_EMAIL,
         to : email,
         subject : 'Recuperacion de contraseña',
         text : mnsj
     }
 
-    try{
-        const transport = nodemailer.createTransport(config);
-        const info = await transport.sendMail(mensaje);
-    
-        console.log(info);
-    }
-    catch(error){
-        console.log('ocurrio un error');
-    }
+    const transport = nodemailer.createTransport(config);
+    const info = await transport.sendMail(mensaje);
+
+    console.log('Se envio el email');
 }

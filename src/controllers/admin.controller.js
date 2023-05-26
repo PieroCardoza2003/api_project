@@ -1,15 +1,18 @@
 import { pool } from '../db.js'
 
+const nivel = 0;
+
 export const autenticarAdmin = async(req, res) => {
     try{
         const {usuario, passwrd} = req.body
-        const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE usuario = ? AND passwrd = ? AND estado = ?', [usuario, passwrd, 'A'])
-        
-        if(rows.length <= 0) return res.status(404).json({
-            message: 'Admin not fount'
-        })
+        const [rows] = await pool.query('CALL sp_iniciar_sesion(?,?)', [usuario, passwrd])
 
-        res.json(rows[0])
+        if(rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
+
     }catch(error){
         return res.status(500).json({
             message: 'Ocurrio algun error'
@@ -19,24 +22,24 @@ export const autenticarAdmin = async(req, res) => {
 
 export const getAdmin = async(req, res) => {
     try{
-        const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE estado = ?', 'A')
-        res.json(rows)
+        const [rows] = await pool.query('CALL sp_lista_administrador(?)', 'A')
+        res.json(rows[0])
     }catch(error){
         return res.status(500).json({
-            message: 'Ocurrio algun error' 
+            message: 'Ocurrio algun error'
         })
     }
 }
 
 export const getAdminId = async(req, res) => {
     try{
-        const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE id_admin = ?', [req.params.id])
+        const [rows] = await pool.query('CALL sp_lista_administrador(?)', [req.params.id])
     
-        if(rows.length <= 0) return res.status(404).json({
-            message: 'Admin not fount'
-        })
-    
-        res.json(rows[0])
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({
@@ -47,20 +50,16 @@ export const getAdminId = async(req, res) => {
 
 export const createAdmin = async (req, res) => {
     try{
-        const {nombre, apellidos, dni, telefono, email, usuario, passwrd, estado} = req.body
-        const [rows] = await pool.query('INSERT INTO ADMINISTRADOR (nombre, apellidos, dni, telefono, email, usuario, passwrd, estado) VALUES (?,?,?,?,?,?,?,?)', [nombre, apellidos, dni, telefono, email, usuario, passwrd, estado])
+        const {nombre, apellidos, dni, telefono, email} = req.body
 
-        res.send({
-            id: rows.insertId,
-            nombre,
-            apellidos,
-            dni,
-            telefono,
-            email,
-            usuario,
-            passwrd,
-            estado
-        })
+        const [rows] = await pool.query('CALL sp_insertar(?,?,?,?,?,?)', [nombre, apellidos, dni, telefono, email, nivel])
+
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
+        
     }
     catch(error){
         return res.status(500).json({
@@ -73,17 +72,15 @@ export const updateAdmin = async(req, res) => {
 
     try{
         const {id} = req.params
-        const {nombre, apellidos, dni, telefono, email, usuario, passwrd, estado} = req.body
+        const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
         
-        const [result] = await pool.query('UPDATE ADMINISTRADOR SET nombre = IFNULL(?, nombre), apellidos = IFNULL(?, apellidos), dni = IFNULL(?, dni), telefono = IFNULL(?, telefono), email = IFNULL(?, email), usuario = IFNULL(?, usuario), passwrd = IFNULL(?, passwrd), estado = IFNULL(?,estado) WHERE id_admin = ?',[nombre, apellidos, dni, telefono, email, usuario, passwrd, estado, id])
-    
-        if(result.affectedRows == 0) return res.status(404).json({
-            message: 'Admin not fount'
-        })
-    
-        const [rows] = await pool.query('SELECT * FROM ADMINISTRADOR WHERE id_admin = ?', [id])
-    
-        res.json(rows[0])
+        const [result] = await pool.query('CALL sp_actualizar( ?,?,?,?,?,?,?,?,? )',[id, nombre, apellidos, dni, telefono, email, usuario, passwrd, nivel])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({
@@ -95,13 +92,55 @@ export const updateAdmin = async(req, res) => {
 export const deleteAdmin = async(req, res) => {
 
     try{
-        const [result] = await pool.query('DELETE FROM ADMINISTRADOR WHERE id_admin = ?', [req.params.id])
-    
-        if(result.affectedRows <= 0 ) return res.status(404).json({
-            message: 'Admin not fount'
+        const [result] = await pool.query('CALL sp_eliminar(?)', [req.params.id])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
         })
-    
-        res.sendStatus(204)
+    }
+}
+
+export const estadoAdmin = async(req, res) => {
+
+    try{
+        const {id} = req.params
+        const {estado} = req.body
+        
+        const [result] = await pool.query('CALL sp_cambiar_estado( ?,?,? )',[id, estado, nivel])
+
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
+
+export const cambiarPassAdmin = async(req, res) => {
+
+    try{
+        const {id} = req.params
+        const {oldpasswrd , newpasswrd} = req.body
+
+        const [result] = await pool.query('CALL sp_cambiar_pass( ?,?,? )',[id, oldpasswrd, newpasswrd])
+        
+        if(result[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(result[0][0])
+        }
     }
     catch(error){
         return res.status(500).json({
