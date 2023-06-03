@@ -1,26 +1,27 @@
 import { pool } from '../db.js'
 import {USER_EMAIL,EMAIL_PASS} from '../config.js'
+import {emailPersonalizado} from '../components/plantilla.msj.js'
 import nodemailer from 'nodemailer'
 
 export const recuperarContrasena = async(req, res) => {
     try{
-        const {usuario, codigo} = req.body
+        const {usuario} = req.body
         
         //Validar que el usuario este en nuestra base de datos
-        const [rows] = await pool.query('SELECT email FROM DATOS WHERE usuario = ?', [usuario])
+        const [rows] = await pool.query('SELECT id_user,email FROM DATOS WHERE usuario = ?', [usuario])
         
         if(rows.length <= 0) return res.status(404).json({
-            message: 'User not fount'
+            resp: '-1'
         })
 
-        //Extraer el E-mail asociado al usuario
+        const id =  rows[0].id_user
+        const codigo = generarCodigo()
         const email =  rows[0].email
+        const mail = ocultarMail(email)
 
-        //enviar el mensaje con el codigo de recuperacion
-        enviarMail(email, codigo);
+        //enviarMail(email, codigo);
 
-        //se muesta el correo asociado
-        res.json(rows[0])
+        res.json({ resp: id, resp2: codigo, resp3: mail })
 
     }catch(error){
         return res.status(500).json({
@@ -31,24 +32,50 @@ export const recuperarContrasena = async(req, res) => {
 
 export const enviarMail = async (email, mnsj) => {
 
-    const config = {
-        service: 'Gmail',
-        auth : {
-            user : USER_EMAIL,
-            pass : EMAIL_PASS
-        },
-        secure: true, // Utiliza el protocolo SMTP con TLS
+    try{
+        const config = {
+            service: 'Gmail',
+            auth : {
+                user : USER_EMAIL,
+                pass : EMAIL_PASS
+            },
+            secure: true, // Utiliza el protocolo SMTP con TLS
+        }
+
+        const mensaje = {
+            from : USER_EMAIL,
+            to : email,
+            subject : 'Trust Partners',
+            html: emailPersonalizado(mnsj)
+        }
+
+        const transport = nodemailer.createTransport(config);
+        const info = await transport.sendMail(mensaje);
     }
-
-    const mensaje = {
-        from : USER_EMAIL,
-        to : email,
-        subject : 'Recuperacion de contraseña',
-        text : mnsj
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
     }
+}
 
-    const transport = nodemailer.createTransport(config);
-    const info = await transport.sendMail(mensaje);
+function generarCodigo() {
+    const codigo = Math.floor(Math.random() * 100000);
+    return codigo.toString().padStart(5, '0');
+}
 
-    console.log('Se envio el email');
+function ocultarMail(mail) {
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValidEmail = emailRegex.test(mail);
+    
+    if (!isValidEmail) {
+        throw new Error("Formato de correo electrónico inválido");
+    }
+    
+    const posicion = mail.indexOf("@");
+    const first = mail.substring(0, Math.min(3, posicion));
+    const last = mail.substring(posicion);
+    
+    return `${first}*****${last}`;
 }

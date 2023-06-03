@@ -17,9 +17,7 @@ app.use('/api', sucursalRoutes)
 app.use('/api', runnerRoutes)
 app.use('/api', digitadorRoutes)
 app.use('/api', adminRoutes)
-
 app.use('/api', mensajeValidador)
-
 app.use('/api' , employeesRoutes)
 
 app.use((req, res, next) => {
@@ -27,5 +25,6 @@ app.use((req, res, next) => {
         message: 'la ruta no existe'
     })
 })
+
 
 export default app;
