@@ -41,7 +41,7 @@ export const recuperarContrasena = async(req, res) => {
         const email =  rows[0].email
         const mail = ocultarMail(email)
 
-        //enviarMail(email, codigo);
+        enviarMail(email, codigo);
 
         res.json({ resp: id, resp2: codigo, resp3: mail })
 

@@ -9,22 +9,23 @@ export const autenticarAdmin = async(req, res) => {
         
         const {usuario, passwrd} = req.body
         const [auth] = await pool.query('CALL sp_verifica_usuario(?)', usuario)
-
+        
         if(!auth[0][0].resp.length > 1){
             return res.status(404).json({ fallo: "1" })
         }
-
+        
         if(await comparePassword( passwrd, auth[0][0].resp)){
 
             const [rows]  = await pool.query('CALL sp_iniciar_sesion(?)', [usuario])
-
+            
             if(rows[0][0].fallo.length <= 1){
                 return res.status(404).json({ fallo: "1" })
             }
-
+            
             res.json(rows[0][0])
         }
         else{
+            
             return res.status(404).json({ fallo: "1" })
         }
     }
