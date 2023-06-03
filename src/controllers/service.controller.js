@@ -46,8 +46,9 @@ export const recuperarContrasena = async(req, res) => {
         res.json({ resp: id, resp2: codigo, resp3: mail })
 
     }catch(error){
+        const r = error.toString
         return res.status(500).json({
-            message: 'Ocurrio algun error'
+            respuesta: r
         })
     }
 }
