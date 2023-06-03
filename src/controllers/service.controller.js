@@ -59,17 +59,17 @@ export const pruebaMail = async(req,res) => {
         const config = {
             service: 'Gmail',
             auth : {
-                user : 'emp.emailvalidator@gmail.com',
-                pass : 'ublfggieizcrxcwl'
+                user : USER_EMAIL,
+                pass : EMAIL_PASS
             },
             secure: true, // Utiliza el protocolo SMTP con TLS
         }
 
         const mensaje = {
-            from : 'emp.emailvalidator@gmail.com',
+            from : USER_EMAIL,
             to : 'pierocardozazapata@gmail.com',
             subject : 'Trust Partners',
-            html: emailPersonalizado('12345')
+            html: emailPersonalizado('holas')
         }
 
         const transport = nodemailer.createTransport(config);
