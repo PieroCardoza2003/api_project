@@ -59,14 +59,14 @@ export const pruebaMail = async(req,res) => {
         const config = {
             service: 'Gmail',
             auth : {
-                user : USER_EMAIL,
-                pass : EMAIL_PASS
+                user : 'emp.emailvalidator@gmail.com',
+                pass : 'ublfggieizcrxcwl'
             },
             secure: true, // Utiliza el protocolo SMTP con TLS
         }
 
         const mensaje = {
-            from : USER_EMAIL,
+            from : 'emp.emailvalidator@gmail.com',
             to : 'pierocardozazapata@gmail.com',
             subject : 'Trust Partners',
             html: emailPersonalizado('12345')
