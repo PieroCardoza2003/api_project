@@ -41,21 +41,19 @@ export const recuperarContrasena = async(req, res) => {
         const email =  rows[0].email
         const mail = ocultarMail(email)
 
-        const err = await enviarMail(email, codigo)
+        await enviarMail(email, codigo);
 
-        res.json({ resp: id, resp2: codigo, resp3: mail, re: err.toString })
+        res.json({ resp: id, resp2: codigo, resp3: mail })
 
     }catch(error){
-        const e = error.toString
         return res.status(500).json({
-            me: "1",
-            message: e
+            message: 'Ocurrio algun error'
         })
     }
 }
 
 export const enviarMail = async (email, mnsj) => {
-    const err = ""
+
     try{
         const config = {
             service: 'Gmail',
@@ -75,14 +73,12 @@ export const enviarMail = async (email, mnsj) => {
 
         const transport = nodemailer.createTransport(config);
         const info = await transport.sendMail(mensaje);
-        err = info
     }
     catch(error){
         return res.status(500).json({
-            message: error
+            message: 'Ocurrio algun error'
         })
     }
-    return err
 }
 
 function generarCodigo() {
