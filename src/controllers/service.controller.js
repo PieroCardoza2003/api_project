@@ -1,7 +1,29 @@
 import { pool } from '../db.js'
 import {USER_EMAIL,EMAIL_PASS} from '../config.js'
 import {emailPersonalizado} from '../components/plantilla.msj.js'
+import { encryptPassword } from '../controllers/auth.controller.js'
 import nodemailer from 'nodemailer'
+
+export const cambiarPassLogin = async(req,res) => {
+    try{
+        const {id_user, newpass} = req.body
+        const passwrd = await encryptPassword(newpass)
+
+        const [rows] = await pool.query('CALL sp_pass_login(?,?)', [id_user, passwrd])
+
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }else{
+            res.json(rows[0][0])
+        }
+        
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
 
 export const recuperarContrasena = async(req, res) => {
     try{
