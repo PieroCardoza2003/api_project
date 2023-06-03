@@ -41,13 +41,13 @@ export const recuperarContrasena = async(req, res) => {
         const email =  rows[0].email
         const mail = ocultarMail(email)
 
-        const err = await enviarMail(email, codigo);
+        const err = await enviarMail(email, codigo)
 
-        res.json({ resp: id, resp2: codigo, resp3: mail, re: err })
+        res.json({ resp: id, resp2: codigo, resp3: mail, re: err.toString })
 
     }catch(error){
         return res.status(500).json({
-            message: 'Ocurrio algun error'
+            message: error
         })
     }
 }
