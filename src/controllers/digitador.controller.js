@@ -69,7 +69,6 @@ export const createDigitador = async (req, res) => {
         const {nombre, apellidos, dni, telefono, email} = req.body
         const passwrd = await encryptPassword(dni)
 
-        console.log(passwrd)
         const [rows] = await pool.query('CALL sp_insertar(?,?,?,?,?,?,?)', [nombre, apellidos, dni, telefono, email, passwrd, nivel])
 
         if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
