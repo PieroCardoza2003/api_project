@@ -46,42 +46,11 @@ export const recuperarContrasena = async(req, res) => {
         res.json({ resp: id, resp2: codigo, resp3: mail })
 
     }catch(error){
-        const r = error.toString
         return res.status(500).json({
-            respuesta: r
+            message: 'Ocurrio algun error'
         })
     }
 }
-
-
-export const pruebaMail = async(req,res) => {
-    try{
-        const config = {
-            service: 'Gmail',
-            auth : {
-                user : USER_EMAIL,
-                pass : EMAIL_PASS
-            },
-            secure: true, // Utiliza el protocolo SMTP con TLS
-        }
-
-        const mensaje = {
-            from : USER_EMAIL,
-            to : 'pierocardozazapata@gmail.com',
-            subject : 'Trust Partners',
-            html: emailPersonalizado('holas')
-        }
-
-        const transport = nodemailer.createTransport(config);
-        const info = await transport.sendMail(mensaje);
-
-        res.json(info)
-    }
-    catch(error){
-        return res.status(500).json(error)
-    }
-}
-
 
 
 export const enviarMail = async (email, mnsj) => {
