@@ -95,7 +95,7 @@ export const updateAdmin = async(req, res) => {
     try{
         const {id} = req.params
         const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
-        const pass = passwrd
+        let pass = passwrd
 
         if ( pass != null ){
             //pass = await encryptPassword(passwrd)
