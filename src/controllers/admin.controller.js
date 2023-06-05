@@ -97,8 +97,9 @@ export const updateAdmin = async(req, res) => {
         const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
         const pass = passwrd
 
-        if ( pass != null ){
-            pass = await encryptPassword(passwrd)
+        if ( pass !== null ){
+            //pass = await encryptPassword(passwrd)
+            pass = "hola_no_es_nula"
         }
 
         const [result] = await pool.query('CALL sp_actualizar( ?,?,?,?,?,?,?,?,? )',[id, nombre, apellidos, dni, telefono, email, usuario, pass, nivel])
