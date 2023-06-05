@@ -97,28 +97,22 @@ export const updateAdmin = async(req, res) => {
         const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
         let pass = passwrd
 
-        if ( pass != null ){
-            //pass = await encryptPassword(passwrd)
-            pass = "hola_no_es_nula"
+        if ( pass !== null ){
+            pass = await encryptPassword(passwrd)
         }
 
-        res.status(404).json({ p1: passwrd, p2: pass })
-/*
         const [result] = await pool.query('CALL sp_actualizar( ?,?,?,?,?,?,?,?,? )',[id, nombre, apellidos, dni, telefono, email, usuario, pass, nivel])
 
         if(result[0][0].fallo === "1"){
             return res.status(404).json({ fallo: "1" })
         }else{
             res.json(result[0][0])
-        }*/
+        }
     }
     catch(error){
-        const e = error
-        res.status(500).json(e)
-        /*
         return res.status(500).json({
             message: 'Ocurrio algun error'
-        })*/
+        })
     }
 }
 
