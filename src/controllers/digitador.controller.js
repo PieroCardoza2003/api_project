@@ -90,7 +90,11 @@ export const updateDigitador = async(req, res) => {
     try{
         const {id} = req.params
         const {nombre, apellidos, dni, telefono, email, usuario, passwrd} = req.body
-        const pass = await encryptPassword(passwrd)
+        let pass = passwrd
+
+        if ( pass !== null ){
+            pass = await encryptPassword(passwrd)
+        }
 
         const [result] = await pool.query('CALL sp_actualizar( ?,?,?,?,?,?,?,?,? )',[id, nombre, apellidos, dni, telefono, email, usuario, pass, nivel])
 
