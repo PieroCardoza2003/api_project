@@ -2,7 +2,7 @@ import { pool } from '../db.js'
 
 export const getSucursal = async(req, res) => {
     try{
-        const [rows] = await pool.query('SELECT * FROM SUCURSAL WHERE estado = ?', 'A')
+        const [rows] = await pool.query('SELECT * FROM SUCURSAL')
         
         res.json(rows)
     }catch(error){
@@ -29,17 +29,14 @@ export const getSucursalId = async(req, res) => {
     }
 }
 
-export const createSucursal = async (req, res) => {
+export const createSucursal = async (req, res, next) => {
     try{
-        const {razonSocial, email, estado} = req.body
-        const [rows] = await pool.query('INSERT INTO SUCURSAL (razonSocial, email, estado) VALUES (?,?,?)', [razonSocial, email,estado])
+        const {razonSocial, email} = req.body
+        const [rows] = await pool.query('INSERT INTO SUCURSAL (razonSocial, email, estado) VALUES (?,?,?)', [razonSocial, email,'A'])
 
-        res.send({
-            id: rows.insertId,
-            razonSocial,
-            email,
-            estado
-        })
+        res.json({fallo: "0"})
+        
+        next() //websocket return
     }
     catch(error){
         return res.status(500).json({
@@ -56,13 +53,9 @@ export const updateSucursal = async(req, res) => {
         
         const [result] = await pool.query('UPDATE SUCURSAL SET razonSocial = IFNULL(?, razonSocial), email = IFNULL(?, email), estado = IFNULL(?,estado) WHERE id_sucursal = ?',[razonSocial, email,estado, id])
     
-        if(result.affectedRows == 0) return res.status(404).json({
-            message: 'Sucursal not fount'
-        })
+        if(result.affectedRows == 0) return res.status(404).json({ fallo: "1" })
     
-        const [rows] = await pool.query('SELECT * FROM SUCURSAL WHERE id_sucursal = ?', [id])
-    
-        res.json(rows[0])
+        res.json({fallo: "0"})
     }
     catch(error){
         return res.status(500).json({
@@ -80,7 +73,7 @@ export const deleteSucursal = async(req, res) => {
             message: 'Sucursal not fount'
         })
     
-        res.sendStatus(204)
+        res.json({fallo: "0"})
     }
     catch(error){
         return res.status(500).json({
