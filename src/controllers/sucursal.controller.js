@@ -29,14 +29,12 @@ export const getSucursalId = async(req, res) => {
     }
 }
 
-export const createSucursal = async (req, res, next) => {
+export const createSucursal = async (req, res) => {
     try{
         const {razonSocial, email} = req.body
         const [rows] = await pool.query('INSERT INTO SUCURSAL (razonSocial, email, estado) VALUES (?,?,?)', [razonSocial, email,'A'])
 
         res.json({fallo: "0"})
-        
-        next() //websocket return
     }
     catch(error){
         return res.status(500).json({

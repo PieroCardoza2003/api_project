@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { pool } from '../db.js'
+import { getOrdenDisponible, getOrdenRuta, getOrdenTomada } from '../controllers/ordenes.controller.js'
 
 let wss;
 
@@ -9,42 +9,68 @@ const initWebSocketServer = (server) => {
   wss.on('connection', async (ws) => {
     console.log('Nuevo cliente WebSocket conectado');
 
-    //ws.send('Bienvenido al servidor WebSocket');
 
-    const data = await getData();
-    ws.send(JSON.stringify(data));
+    ws.on('message', async (message) => {
+      
+      if(message.toString() === 'ordenesTomadas'){
+        const data = await getOrdenTomada();
+        ws.send("OT"+JSON.stringify(data));
+      }
 
-    // Manejar el cierre de la conexión del cliente
+      if(message.toString() === 'ordenesDisponibles'){
+        const data = await getOrdenDisponible();
+        ws.send("OD"+JSON.stringify(data));
+      }
+
+      if(message.toString() === 'ordenesRuta'){
+        const data = await getOrdenRuta();
+        ws.send("OR"+JSON.stringify(data));
+      }
+
+    });
+
+
     ws.on('close', () => {
       console.log('Cliente desconectado');
     });
   });
 };
 
-const broadcastMessage = async(req, res, next) => {
 
+const broadcastOD = async(req, res, next) => {
+  console.log('En broadcast OD');
   wss.clients.forEach(async(client) => {
 
     if (client.readyState === client.OPEN) {
-      //client.send('SE REGISTRO UNA SUCURSAL NUEVA');
-      const data = await getData();
-      client.send(JSON.stringify(data));
+      const data = await getOrdenDisponible();
+      client.send("OD"+JSON.stringify(data));
     }
   });
+};
 
-  //next();
+const broadcastOT = async(req, res, next) => {
+  console.log('En broadcast OT');
+  wss.clients.forEach(async(client) => {
+
+    if (client.readyState === client.OPEN) {
+      const data = await getOrdenTomada();
+      client.send("OT"+JSON.stringify(data));
+    }
+  });
+  await broadcastOD(req, res, next); //enviar actualizacion por broadcastOD
+};
+
+const broadcastOR = async(req, res, next) => {
+  console.log('En broadcast OR');
+  wss.clients.forEach(async(client) => {
+
+    if (client.readyState === client.OPEN) {
+      const data = await getOrdenRuta();
+      client.send("OR"+JSON.stringify(data));
+    }
+  });
+  await broadcastOT(req, res, next); //enviar actualizacion por broadcastOT
 };
 
 
-const getData = async () => {
-  try {
-    const [rows] = await pool.query('SELECT * FROM SUCURSAL WHERE estado = ?', 'A')
-    return rows;
-  } catch (error) {
-    console.log('Error al obtener los datos de la tabla:', error);
-    return null;
-  }
-};
-
-
-export { initWebSocketServer, broadcastMessage };
+export { initWebSocketServer, broadcastOD, broadcastOT,  broadcastOR};
