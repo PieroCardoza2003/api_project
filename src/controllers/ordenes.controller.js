@@ -98,8 +98,6 @@ export const ordenenRuta = async (req, res, next) => {
 
 export const eliminaOrdenRunner = async(req, res, next) => {
 
-    const tipo = req.body
-
     try{
         const [result] = await pool.query('DELETE FROM ORDENESTOMADAS WHERE id_orden = ?', [req.params.id])
     
@@ -128,14 +126,13 @@ export const cancelaOrdenTomadaRunner = async (req, res, next) => {
         if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
             return res.status(404).json({ fallo: "1" })
         }
-        else{
-            res.json(rows[0][0])
-            next() //avisar a los clientes del websocket que se hubo un cambio
-        }
+        
+        res.json({fallo: "0"})
+        next() //avisar a los clientes del websocket que se hubo un cambio
     }
     catch(error){
         return res.status(500).json({
-            message: 'Ocurrio algun error'
+            message: 'Ocurrio algun error '
         })
     }
 }

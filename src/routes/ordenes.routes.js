@@ -1,5 +1,6 @@
 import { Router } from 'express'
-import { ordenDisponible, ordenenRuta, ordentomada,eliminaOrdenRunner, cancelaOrdenTomadaRunner } from '../controllers/ordenes.controller.js'
+import { ordenDisponible, ordenenRuta, ordentomada,
+    eliminaOrdenRunner, cancelaOrdenTomadaRunner } from '../controllers/ordenes.controller.js'
 import { broadcastOT,broadcastOD, broadcastOR } from '../socket/websocket.js';
 
 const router = Router()
