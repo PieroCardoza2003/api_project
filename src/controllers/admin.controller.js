@@ -159,20 +159,34 @@ export const cambiarPassAdmin = async(req, res) => {
 
     try{
         const {id} = req.params
-        const {oldpasswrd , newpasswrd} = req.body
-        newpasswrd = await encryptPassword(newpasswrd)
+        const {usuario, oldpasswrd , newpasswrd} = req.body
+        let pass = newpasswrd
 
-        const [result] = await pool.query('CALL sp_cambiar_pass( ?,?,? )',[id, oldpasswrd, newpasswrd])
-        
-        if(result[0][0].fallo === "1"){
+        const [auth] = await pool.query('CALL sp_verifica_usuario(?)', usuario) //devuelve pass
+
+        if(!auth[0][0].resp.length > 1){
             return res.status(404).json({ fallo: "1" })
-        }else{
+        }
+
+        if(await comparePassword( oldpasswrd, auth[0][0].resp)){ //verifica pass
+
+            pass = await encryptPassword(newpasswrd) //encripta newpass
+
+            const [result] = await pool.query('CALL sp_cambiar_pass( ?,?,? )',[id, auth[0][0].resp, pass])
+            
+            if(result[0][0].fallo === "1"){
+                return res.status(404).json({ fallo: "1" })
+            }
+            
             res.json(result[0][0])
+        }
+        else{
+            return res.status(404).json({ fallo: "1" })
         }
     }
     catch(error){
         return res.status(500).json({
-            message: 'Ocurrio algun error'
+            message: 'ocurrio un error'
         })
     }
 }
