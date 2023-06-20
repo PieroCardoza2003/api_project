@@ -2,7 +2,7 @@ import { pool } from '../db.js'
 
 export const getOrdenDisponible = async () => {
     try {
-        const [rows] = await pool.query('CALL sp_lista_ordenes(?)', 0);
+        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [0,'']);
       return rows[0];
     } catch (error) {
         return 'Ocurrio un error';
@@ -11,7 +11,7 @@ export const getOrdenDisponible = async () => {
 
 export const getOrdenTomada = async () => {
     try {
-      const [rows] = await pool.query('CALL sp_lista_ordenes(?)', 1);
+      const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [1,'']);
       return rows[0];
     } catch (error) {
         return 'Ocurrio un error';
@@ -20,7 +20,7 @@ export const getOrdenTomada = async () => {
 
 export const getOrdenRuta = async () => {
     try {
-      const [rows] = await pool.query('CALL sp_lista_ordenes(?)', 2);
+      const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [2,'']);
       return rows[0];
     } catch (error) {
         return 'Ocurrio un error';
@@ -181,3 +181,13 @@ export const entregaPitstop = async (req, res, next) => {
         })
     }
 }
+
+export const ordenesEntregadas = async () => {
+    try {
+        const id = req.params.id
+        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [3, id]);
+        return rows[0];
+    } catch (error) {
+        return 'Ocurrio un error';
+    }
+};

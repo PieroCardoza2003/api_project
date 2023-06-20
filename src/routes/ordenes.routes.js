@@ -1,10 +1,11 @@
 import { Router } from 'express'
-import { ordenDisponible, ordenenRuta, ordentomada, entregaPitstop,
+import { ordenDisponible, ordenenRuta, ordentomada, entregaPitstop,ordenesEntregadas,
     eliminaOrdenRunner, cancelaOrdenTomadaRunner, cancelaOrdenRutaRunner } from '../controllers/ordenes.controller.js'
 import { broadcastOT,broadcastOD, broadcastOR } from '../socket/websocket.js';
 
 const router = Router()
 
+router.get('/ordenesentregadas/:id', ordenesEntregadas)
 
 router.post('/ordendisponible', ordenDisponible, broadcastOD)
 
