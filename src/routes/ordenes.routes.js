@@ -14,7 +14,7 @@ router.post('/ordenenruta', ordenenRuta, broadcastOR)
 
 router.post('/cancelaordentomadarunner', cancelaOrdenTomadaRunner, broadcastOT)
 
-router.post('/cancelaordentomadarunner', cancelaOrdenRutaRunner, broadcastOR)
+router.post('/cancelaordenrutarunner', cancelaOrdenRutaRunner, broadcastOR)
 
 router.delete('/eliminaordenrunner/:id', eliminaOrdenRunner, broadcastOT)
 
