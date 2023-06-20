@@ -182,7 +182,7 @@ export const entregaPitstop = async (req, res, next) => {
     }
 }
 
-export const ordenesEntregadas = async () => {
+export const ordenesEntregadas = async (req, res,) => {
     try {
         const id = req.params.id
         const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [3, id]);
