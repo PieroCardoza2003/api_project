@@ -3,6 +3,50 @@ import {USER_EMAIL,EMAIL_PASS} from '../config.js'
 import {emailPersonalizado} from '../components/plantilla.msj.js'
 import { encryptPassword } from '../controllers/auth.controller.js'
 import nodemailer from 'nodemailer'
+import PDFDocument from 'pdfkit'
+
+export const reporteRunner = async (req, res) => {
+    //reporterunner?id=1234557&dia=02-12-2002
+    try {
+      const { id, dia } = req.query;
+  
+      const [rows] = await pool.query('SELECT * FROM RUNNER WHERE id_runner = ?', [id]);
+  
+      if (rows.length <= 0) {
+        return res.status(404).json({
+          message: 'No se encontró el runner',
+        });
+      }
+  
+      const doc = new PDFDocument();
+  
+      doc.text(`
+        =================================================
+                        REPORTE DE ENTREGAS
+        =================================================
+        Nombre: ${rows[0].nombre}
+        Apellidos: ${rows[0].apellidos}
+        Cargo: RUNNER
+        Día: ${dia}
+        Cantidad de órdenes entregadas: 0
+        Cantidad de órdenes canceladas: 0
+        =================================================
+      `);
+  
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename=reporte.pdf');
+  
+      doc.pipe(res);
+      doc.end();
+    } catch (error) {
+      return res.status(500).json({
+        message: 'Ocurrió un error',
+      });
+    }
+  };
+  
+  
+
 
 export const cambiarPassLogin = async(req,res) => {
     try{
