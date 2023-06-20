@@ -136,3 +136,24 @@ export const cancelaOrdenTomadaRunner = async (req, res, next) => {
         })
     }
 }
+
+export const cancelaOrdenRutaRunner = async (req, res, next) => {
+
+    try{
+        const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, runner} = req.body
+
+        const [rows] = await pool.query('CALL sp_cancela_orden_ruta_runner(?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, runner])
+ 
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }
+        
+        res.json({fallo: "0"})
+        next() //avisar a los clientes del websocket que se hubo un cambio
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error '
+        })
+    }
+}
