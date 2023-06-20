@@ -142,7 +142,7 @@ export const cancelaOrdenRutaRunner = async (req, res, next) => {
     try{
         const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, runner} = req.body
 
-        const [rows] = await pool.query('CALL sp_cancela_orden_ruta_runner(?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, runner])
+        const [rows] = await pool.query('CALL sp_cancela_orden_ruta_runner(?,?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, runner])
  
         if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
             return res.status(404).json({ fallo: "1" })
