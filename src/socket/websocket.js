@@ -1,5 +1,5 @@
 import { WebSocketServer } from 'ws';
-import { getOrdenDisponible, getOrdenRuta, getOrdenTomada } from '../controllers/ordenes.controller.js'
+import { getOrdenDisponible, getOrdenRuta, getOrdenTomada, getOrdenPitstop } from '../controllers/ordenes.controller.js'
 
 let wss;
 
@@ -25,6 +25,11 @@ const initWebSocketServer = (server) => {
       if(message.toString() === 'ordenesRuta'){
         const data = await getOrdenRuta();
         ws.send("OR"+JSON.stringify(data));
+      }
+
+      if(message.toString() === 'ordenesPitstop'){
+        const data = await getOrdenPitstop();
+        ws.send("OP"+JSON.stringify(data));
       }
 
     });
@@ -72,5 +77,17 @@ const broadcastOR = async(req, res, next) => {
   await broadcastOT(req, res, next); //enviar actualizacion por broadcastOT
 };
 
+const broadcastOP = async(req, res, next) => {
+  console.log('En broadcast OP');
+  wss.clients.forEach(async(client) => {
 
-export { initWebSocketServer, broadcastOD, broadcastOT,  broadcastOR};
+    if (client.readyState === client.OPEN) {
+      const data = await getOrdenPitstop();
+      client.send("OP"+JSON.stringify(data));
+    }
+  });
+  await broadcastOR(req, res, next); //enviar actualizacion por broadcastOR
+};
+
+
+export { initWebSocketServer, broadcastOD, broadcastOT,  broadcastOR, broadcastOP};

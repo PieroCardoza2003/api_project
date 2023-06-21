@@ -26,7 +26,25 @@ export const getOrdenRuta = async () => {
         return 'Ocurrio un error';
     }
 };
-  
+
+export const getOrdenPitstop = async () => {
+    try {
+      const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [3,'']);
+      return rows[0];
+    } catch (error) {
+        return 'Ocurrio un error';
+    }
+};
+
+export const ordenesEntregadas = async (req, res,) => {
+    try {
+        const id = req.params.id
+        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [4, id]);
+        res.json(rows[0])
+    } catch (error) {
+        return 'Ocurrio un error';
+    }
+};
 
 export const ordenDisponible = async (req, res, next) => {
 
@@ -159,7 +177,7 @@ export const cancelaOrdenRutaRunner = async (req, res, next) => {
 }
 
 
-export const entregaPitstop = async (req, res, next) => {
+export const ordenPitstop = async (req, res, next) => {
 
     try{
         const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner} = req.body
@@ -182,12 +200,27 @@ export const entregaPitstop = async (req, res, next) => {
     }
 }
 
-export const ordenesEntregadas = async (req, res,) => {
-    try {
-        const id = req.params.id
-        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [3, id]);
-        res.json(rows[0])
-    } catch (error) {
-        return 'Ocurrio un error';
+
+export const registrarOrden = async (req, res, next) => {
+
+    try{
+        const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner} = req.body
+//cambiar a inserta ORDEN
+        const [rows] = await pool.query('CALL sp_entrega_pitstop(?,?,?,?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner])
+
+        if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
+            return res.status(404).json({ fallo: "1" })
+        }
+        else{
+            res.json(rows[0][0])
+            
+            next() //avisar a los clientes del websocket que se hubo un cambio
+        }
     }
-};
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
+
