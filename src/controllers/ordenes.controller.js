@@ -38,8 +38,7 @@ export const getOrdenPitstop = async () => {
 
 export const ordenesEntregadas = async (req, res,) => {
     try {
-        const id = req.params.id
-        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [4, id]);
+        const [rows] = await pool.query('CALL sp_lista_ordenes(?,?)', [4, '']);
         res.json(rows[0])
     } catch (error) {
         return 'Ocurrio un error';
@@ -223,16 +222,15 @@ export const ordenPitstop = async (req, res, next) => {
 export const registrarOrden = async (req, res, next) => {
 
     try{
-        const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner} = req.body
-//cambiar a inserta ORDEN
-        const [rows] = await pool.query('CALL sp_entrega_pitstop(?,?,?,?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner])
+        const {id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner, receptor_orden, hora_envio, estado} = req.body
+
+        const [rows] = await pool.query('CALL sp_registrar_orden(?,?,?,?,?,?,?,?,?,?,?,?,?)', [id_orden, codigo_pedido, sucursal, precio, app, creador_orden, fechaOrden, hora_recojo, hora_entrega, runner, receptor_orden, hora_envio, estado])
 
         if(rows[0].length <= 0 || rows[0][0].fallo === "1"){
             return res.status(404).json({ fallo: "1" })
         }
         else{
             res.json(rows[0][0])
-            
             next() //avisar a los clientes del websocket que se hubo un cambio
         }
     }

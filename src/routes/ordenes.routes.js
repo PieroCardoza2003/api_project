@@ -5,14 +5,14 @@ import { broadcastOT,broadcastOD, broadcastOR, broadcastOP } from '../socket/web
 
 const router = Router()
 
-router.get('/ordenesentregadas/:id', ordenesEntregadas)
+router.get('/ordenesentregadas', ordenesEntregadas) //caso especial sin real time
 
 router.post('/ordendisponible', ordenDisponible, broadcastOD)
 router.post('/ordentomada', ordentomada, broadcastOT)
 router.post('/ordenenruta', ordenenRuta, broadcastOR)
 router.post('/ordenpitstop', ordenPitstop, broadcastOP)
 
-//router.post('/entregapitstop', registrarOrden, broadcastOR)
+router.post('/registrarorden', registrarOrden, broadcastOP)
 
 router.post('/cancelaordentomadarunner', cancelaOrdenTomadaRunner, broadcastOT)
 router.post('/cancelaordenrutarunner', cancelaOrdenRutaRunner, broadcastOR)
