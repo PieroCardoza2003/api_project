@@ -114,10 +114,29 @@ export const ordenenRuta = async (req, res, next) => {
     }
 }
 
-export const eliminaOrdenRunner = async(req, res, next) => {
+export const eliminaOrdenTomada = async(req, res, next) => {
 
     try{
         const [result] = await pool.query('DELETE FROM ORDENESTOMADAS WHERE id_orden = ?', [req.params.id])
+    
+        if(result.affectedRows <= 0 ) return res.status(404).json({
+            message: 'orden not fount'
+        })
+    
+        res.json({fallo: "0"})
+        next() //avisar a los clientes del websocket que se hubo un cambio
+    }
+    catch(error){
+        return res.status(500).json({
+            message: 'Ocurrio algun error'
+        })
+    }
+}
+
+export const eliminaOrdenDisponible = async(req, res, next) => {
+
+    try{
+        const [result] = await pool.query('DELETE FROM ORDENESDISPONIBLES WHERE id_orden = ?', [req.params.id])
     
         if(result.affectedRows <= 0 ) return res.status(404).json({
             message: 'orden not fount'
