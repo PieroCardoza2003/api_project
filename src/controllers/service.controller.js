@@ -6,7 +6,7 @@ import nodemailer from 'nodemailer'
 import ExcelJS from 'exceljs';
 
 export const reporteOrdenes = async (req, res) => {
-    //reporterunner?nivel=0&id=1234557&dia=2023-12-12
+    //reporteordenes?nivel=0&id=1234557&dia=2023-12-12
     try {
       const { nivel ,id, dia } = req.query;
   
@@ -17,13 +17,13 @@ export const reporteOrdenes = async (req, res) => {
           message: 'No se encontró el runner',
         });
       }
-  
+      
       // Obtener los nombres de las columnas
-      const columnNames = Object.keys(rows[0]);
+      const columnNames = Object.keys(rows[0][0]);
 
       // Crear el arreglo de datos con el encabezado
-      const data = [columnNames, ...rows.map((row) => Object.values(row))];
-      
+      const data = [columnNames, ...rows[0].map((row) => Object.values(row))];
+
       const workbook = new ExcelJS.Workbook();
 
       // Agregar una hoja al libro
