@@ -3,41 +3,106 @@ import {USER_EMAIL,EMAIL_PASS} from '../config.js'
 import {emailPersonalizado} from '../components/plantilla.msj.js'
 import { encryptPassword } from '../controllers/auth.controller.js'
 import nodemailer from 'nodemailer'
-import PDFDocument from 'pdfkit'
+import ExcelJS from 'exceljs';
 
-export const reporteRunner = async (req, res) => {
-    //reporterunner?id=1234557&dia=02-12-2002
+export const reporteOrdenes = async (req, res) => {
+    //reporterunner?nivel=0&id=1234557&dia=2023-12-12
     try {
-      const { id, dia } = req.query;
+      const { nivel ,id, dia } = req.query;
   
-      const [rows] = await pool.query('SELECT * FROM RUNNER WHERE id_runner = ?', [id]);
+      const [rows] = await pool.query('CALL sp_reportes(?,?,?)', [nivel,id,dia]);
   
-      if (rows.length <= 0) {
+      if (rows[0].length <= 0) {
         return res.status(404).json({
           message: 'No se encontró el runner',
         });
       }
   
-      const doc = new PDFDocument();
+      // Obtener los nombres de las columnas
+      const columnNames = Object.keys(rows[0]);
+
+      // Crear el arreglo de datos con el encabezado
+      const data = [columnNames, ...rows.map((row) => Object.values(row))];
+      
+      const workbook = new ExcelJS.Workbook();
+
+      // Agregar una hoja al libro
+      const worksheet = workbook.addWorksheet('Reporte');
   
-      doc.text(`
-        =================================================
-                        REPORTE DE ENTREGAS
-        =================================================
-        Nombre: ${rows[0].nombre}
-        Apellidos: ${rows[0].apellidos}
-        Cargo: RUNNER
-        Día: ${dia}
-        Cantidad de órdenes entregadas: 0
-        Cantidad de órdenes canceladas: 0
-        =================================================
-      `);
+      // Agregar el logo en la parte superior
+      const logoPath = 'src/components/logo_tp.png';
+      const logoImage = workbook.addImage({
+        filename: logoPath,
+        extension: 'png',
+      });
+      worksheet.addImage(logoImage, {
+        tl: { col: 0, row: 1 },
+        br: { col: 4, row: 4 },
+        editAs: 'absolute',
+      });
   
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=reporte.pdf');
+      // Desplazar la tabla hacia abajo
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      worksheet.addRow([]);
+      
+      // Agregar los encabezados de columna
+      const headerRow = worksheet.addRow(data[0]);
+      
+      // Establecer el estilo del encabezado
+      headerRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: '1A4296' }, 
+        };
+        cell.font = {
+          bold: true,
+          color: { argb: 'FFFFFFFF' },
+        };
+        cell.alignment = { horizontal: 'center' };
+        cell.border = {
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+          left: { style: 'thin' },
+          right: { style: 'thin' },
+        }; // Agregar contorno a la celda
+      });
   
-      doc.pipe(res);
-      doc.end();
+      // Agregar los datos
+      for (let i = 1; i < data.length; i++) {
+        const row = worksheet.addRow(data[i]);
+  
+        // Establecer el estilo de la fila de datos
+        row.eachCell((cell) => {
+          cell.alignment = { horizontal: 'center' }; // Centrar el texto
+          cell.border = {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' },
+          }; // Agregar contorno a la celda
+        });
+      }
+  
+      // Generar el archivo Excel en memoria
+      workbook.xlsx.writeBuffer()
+        .then((buffer) => {
+          // Establecer las cabeceras de la respuesta
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          res.setHeader('Content-Disposition', 'attachment; filename=reporte.xlsx');
+          res.setHeader('Content-Length', buffer.length);
+  
+          // Enviar el archivo Excel como respuesta
+          res.send(buffer);
+        })
+        .catch((error) => {
+          console.error('Error al generar el archivo Excel:', error);
+          res.status(500).send('Error al generar el archivo Excel');
+        });
+
     } catch (error) {
       return res.status(500).json({
         message: 'Ocurrió un error',
