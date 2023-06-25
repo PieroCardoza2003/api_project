@@ -5,7 +5,7 @@ export const ping = async (req, res) => {
 
     try{
         //const consulta = `SELECT "¡LA CONEXION CON LA BASE DE DATOS ES CORRECTA!"`; 
-        const consulta = `SELECT CURRENT_TIME()`; 
+        const consulta = `SELECT CURRENT_TIME()`;
      
         const [result] = await pool.query(consulta);
 
